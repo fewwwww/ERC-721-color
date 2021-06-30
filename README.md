@@ -220,7 +220,7 @@ $ react-scripts start
 在contracts文件夹内新建一个Color.sol文件
 ```
 
-我们将按照ERC-721标准进行开发, 这大大便利了我们的开发流程. 在这个基础上, 我们可以借助[OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts)所实现的ERC-721标准进一步地做到快速开发. 
+我们将按照ERC-721标准进行开发, 这大大便利了我们的开发流程. 在这个基础上, 我们可以借助 [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) 所实现的ERC-721标准进一步地做到快速开发. 
 
 ```
 在IDE的终端中输入:
