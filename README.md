@@ -1,9 +1,14 @@
-# ERC标准以及基于ERC-721的NFT应用开发流程
+---
+sidebar_label: 'ERC标准以及NFT应用开发'
+sidebar_position: 1
+---
+# ERC标准以及基于ERC-721的NFT应用开发
 
 ## 一. ERC标准
 
----
 ### 1. 什么是ERC?
+
+---
 
 ERC是指以太坊已正式化的提案, ERC-721其实就代表721号提案. 通过各种流程的审议与测试后, 一个非正式的EIP就可以转变成ERC, 成为标准化的协议.
 
@@ -16,8 +21,9 @@ ERC是指以太坊已正式化的提案, ERC-721其实就代表721号提案. 通
 
 - 开发者可以遵循这些标准, 这样能做到整个生态的互通以及其他软件适配上的便利. 比如: MyEtherWallet不用频繁更新就可以支持多个币种.
 
----
 ### 2. 有哪些ERC?
+
+---
 
 以下是部分会被频繁使用到的ERC标准.
 
@@ -91,11 +97,10 @@ contract ERC20Interface {
     2. 增加/减少总量和地址内余额(销毁时会验证账户内余额是否大于销毁数额)
     3. 触发Transfer事件
   
-
-  
+    
+### 3. [ERC-721](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md): 服务于非同质化的代币(不可分割, 可追踪性), 代表了资产的所有权. 
 
 ---
-### 3. [ERC-721](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md): 服务于非同质化的代币(不可分割, 可追踪性), 代表了资产的所有权. 
 
 非同质代表独一无二，[CryptoKitties](https://www.cryptokitties.co)为例, 每只猫都拥有独一无二的基因. 一只猫就是一个NFT. 猫和猫之间是不能置换的. 这种独特性使得某些稀有猫具有收藏价值, 也因此受到追捧.
 
@@ -133,8 +138,10 @@ pragma solidity ^0.4.20;
 
 在本节我们将基于ERC-721标准开发一个NFT应用, 应用采用React框架构建客户端页面, 智能合约使用Solidity进行编写, 实现功能为: 通过以太坊钱包发行多个NFT(独特HEX颜色的纯色图片). 
 
----
 ### 1. 安装依赖:
+
+---
+
 首先确保环境中安装了[Node.js](http://nodejs.org), 我们将通过它来安装其他依赖.
 
 ```
@@ -164,7 +171,8 @@ $ git clone https://github.com/fewwwww/ERC-721-starter.git
 ```
 通过IDE打开文件夹, 打开IDE中的终端, 运行
 $ npm install
-来下载React的依赖.
+$ npm i solc --save
+来下载依赖.
 ```
 
 > 注意, 下载生成的 `node_modules` 不需要上传到github或分享给协作者.
@@ -192,4 +200,68 @@ $ react-scripts start
       port: {端口号},
       network_id: "*" // Match any network id
     },
+```
+
+### 2. 开发合约:
+
+---
+
+> 如果你在本节合约编译期间遇到solidity版本冲突问题, 完全解决需要苛刻的网络环境, 最好直接依照文中的老板本进行开发.
+
+我们首先会进行合约的开发.
+
+在`src/contracts`中我们可以看到已经有一个`Migrations.sol`的合约文件, 它的作用是把我们的其他合约与truffle进行桥接. 
+
+由于我们的NFT是一个一个的颜色图片, 所以我们需要新建颜色图片NFT的智能合约. 
+
+```
+在contracts文件夹内新建一个Color.sol文件
+```
+
+我们将按照ERC-721标准进行开发, 这大大便利了我们的开发流程. 在这个基础上, 我们可以借助[OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts)所实现的ERC-721标准进一步地做到快速开发. 
+
+```
+在IDE的终端中输入:
+$ npm install @openzeppelin/contracts@2.3.0 --save
+```
+
+> 如果安装不成功, 可以尝试`$ sudo npm install @openzeppelin/contracts`
+
+安装成功后可以在`package.json`中看到
+
+```
+"dependencies": {
+  "@openzeppelin/contracts": "^2.3.0",
+  ...
+```
+
+我们已经下载完成了OpenZeppelin, 所以在`Color.sol`内我们可以引入OpenZeppelin库中的代码, 同时让我们的合约继承引入的对象: 
+
+```
+import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
+
+contract Color is ERC721Full {
+
+}
+```
+
+在`Color`智能合约中添加构造函数, 并把代币名称和代号传入给父合约: 
+
+```
+contract Color is ERC721Full {
+    constructor() ERC721Full('Color', 'COLOR'  public{}
+}
+```
+
+尝试编译合约: 
+
+```
+$ truffle compile
+```
+
+编译成功会显示:
+
+```
+> Compiled successfully using:
+   - solc: 0.5.16+commit.9c3226ce.Emscripten.clang
 ```
