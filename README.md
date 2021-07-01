@@ -398,7 +398,7 @@ contract Color is ERC721Full {
 
 5. 确保此颜色在后续不被创建
 
-为了做到第二步和第三步, 我们需要使用`Solidity`中的`mapping`数据结构来记录已铸造的颜色.
+为了做到第二步, 我们需要使用`Solidity`中的`mapping`数据结构来记录已铸造的颜色.
 
 `mapping`类似`python`中的`dictionary`
 
