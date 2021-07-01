@@ -76,7 +76,7 @@ contract ERC20Interface {
   4. _allowance()_: 在进行转账时, 查询剩余可转账额度.
   5. _approve()_: 设置消费者代币转移额度限制, 成功后触发`Approve`事件. 当重写限制时, 必须先重写为0, 再设置真实参数, 以避免类似[攻击](https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729).
 
-通过[OpenZeppelin的IERC-20实现](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol), 我们可以了解通过应用ERC-20所完成的业务逻辑:
+通过[OpenZeppelin的IERC-20实现](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol), 我们可以了解通过应用ERC-20所完成的业务逻辑, 具体内容参考[此文章](https://cloud.tencent.com/developer/article/1805419):
   - _transfer()_ 转账逻辑:
     1. 验证付款方与收款方地址是否合法
     2. 查询付款方余额
@@ -88,7 +88,7 @@ contract ERC20Interface {
   
   - _transferFrom()_ 授权转账逻辑:
     1. 调用 _transfer()_ 进行转账
-    2. 查询付款方可转账额度
+    2. 查询操作者在此账户内可转账额度
     3. 验证剩余额度是否足够本次交易, 不足则回滚交易
     4. 正式完成交易
   
@@ -104,7 +104,8 @@ contract ERC20Interface {
 
 非同质代表独一无二，[CryptoKitties](https://www.cryptokitties.co)为例, 每只猫都拥有独一无二的基因. 一只猫就是一个NFT. 猫和猫之间是不能置换的. 这种独特性使得某些稀有猫具有收藏价值, 也因此受到追捧.
 
-以下是ERC-721的具体内容, 我们将在实际开发过程当中深入探讨它:
+以下是ERC-721的具体内容, 我们先简要介绍一下, 之后会在实际开发过程当中深入探讨:
+
 ```
 pragma solidity ^0.4.20;
         interface ERC721 /* is ERC165 */ {
@@ -132,7 +133,44 @@ pragma solidity ^0.4.20;
          }
 ```
 
-伴随近期NFT市场的火热, 社区在ERC-721的基础上增加了ERC-1155, ERC-8899等协议. 它们同样服务于非同质化代币, ERC-1155引入一个中央智能合约包的概念, 可以做到将不同代币打包交易. ERC-8899可以做到将NFT与FT打包交易. 这样的升级版提案大大便利了实际交易, 丰富了交易场景, 拓宽了NFT生态的能力圈.
+通过[OpenZeppelin的IERC-721实现](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol), 我们可以了解ERC-721的接口底层设计, 具体内容可以参考[此文章](https://cloud.tencent.com/developer/article/1805420):
+
+- 与IERC-20类似的设计这里就不再赘述.
+
+- 查询与查找函数：
+  1. *ownerOf()*: 输入tokenId, 返回物品现主人的地址
+  2. *tokenURI()*: 输入tokenId, 检索对应的token, 返回memory中的定位符
+     > Storage可以理解为永久存储, 比如状态变量; Memory类似内存, 会被回收, 越过作用域不可被访问.
+     
+- _transferFrom()_ 转账逻辑: 
+  1. 验证转账是否被允许(参数:from, to, tokenId)
+     1. 验证tokenId是否存在
+     2. 如果操作者是token现主人 and 此操作者允许管理此代币 and 操作者允许管理此主人所有代币
+  2. 调用 *_transfer()* 函数
+     1. 验证from是否是token现主人
+     > 可能 [有疑问](https://ethereum.stackexchange.com/questions/89761/erc721-token-transfers-and-approvals/102772#102772) 为什么刚刚验证了是否是主人/允许操作者, 却还要验证是否是主人. 是因为操作者和from不一定为同一人, 因此验证是必要的.
+     > 
+     > _isApprovedOrOwner(**_msgSender()**, tokenId)
+     > _transfer(**from**, to, tokenId)
+     2. 验证接收地址B是否为空
+     3. 清空from的授权转账权限
+     4. 更新from和to的资产种类
+     5. 将token归属权交给to
+     > *safeTransferFrom()* 在这步额外检查to账户地址是否符合ERC-721规范, 否则回滚交易. 
+     6. 触发Transfer事件
+
+- _mint()_, _burn()_ 代币增发销毁逻辑中额外增加了将mapping中的tokenId创建与消除.
+
+
+伴随NFT市场的火热, 社区在ERC-721的基础上增加了ERC-1155, ERC-8899等协议. 它们同样服务于非同质化代币, ERC-1155引入一个中央智能合约包的概念, 可以做到将不同代币打包交易. ERC-8899可以做到将NFT与FT打包交易. 这样的升级版提案大大便利了实际交易, 丰富了交易场景, 拓宽了NFT生态的能力圈.
+
+### 4. 简要介绍ERC-721的底层实现:
+
+--- 
+
+ERC-721与ERC-20的差别主要还是在于同质化与非同质化. ERC-20的Token可以无限细分, 而ERC-721的Token最小的单位为1, 无法再分割, 而且ERC-721内每一个Token完全不同, 并且每个Token对不同的用户都有不同的价值. 因此在底层实现与设计方面有所区别. 
+
+
 
 ## 二. 实际开发NFT应用
 
@@ -214,18 +252,19 @@ $ react-scripts start
 
 在`src/contracts`中我们可以看到已经有一个`Migrations.sol`的合约文件, 它的作用是把我们的其他合约与truffle进行桥接. 
 
-由于我们的NFT是一个一个的颜色图片, 所以我们需要新建颜色图片NFT的智能合约. 
+1. 由于我们的NFT是一个一个的颜色图片, 所以我们需要新建颜色图片NFT的智能合约. 
+
 
 ```
-在contracts文件夹内新建一个Color.sol文件
-```
+ 在contracts文件夹内新建一个Color.sol文件
+ ```
 
 我们将按照ERC-721标准进行开发, 这大大便利了我们的开发流程. 在这个基础上, 我们可以借助 [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) 所实现的ERC-721标准进一步地做到快速开发. 
 
-```
-在IDE的终端中输入:
-$ npm install @openzeppelin/contracts@2.3.0 --save
-```
+2. ```
+   在IDE的终端中输入:
+   $ npm install @openzeppelin/contracts@2.3.0 --save
+   ```
 
 > 如果安装不成功, 可以尝试`$ sudo npm install @openzeppelin/contracts`
 
@@ -237,7 +276,7 @@ $ npm install @openzeppelin/contracts@2.3.0 --save
   ...
 ```
 
-我们已经下载完成了OpenZeppelin, 所以在`Color.sol`内我们可以引入OpenZeppelin库中的代码, 同时让我们的合约继承引入的对象: 
+3. 我们已经下载完成了OpenZeppelin, 所以在`Color.sol`内我们可以引入OpenZeppelin库中的代码, 同时让我们的合约继承引入的对象: 
 
 ```
 import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
@@ -247,7 +286,7 @@ contract Color is ERC721Full {
 }
 ```
 
-在`Color`智能合约中添加构造函数, 并把代币名称和代号传入给父合约: 
+4. 在`Color`智能合约中添加构造函数, 并把代币名称和代号传入给父合约: 
 
 ```
 contract Color is ERC721Full {
@@ -255,7 +294,7 @@ contract Color is ERC721Full {
 }
 ```
 
-尝试编译合约: 
+5. 尝试编译合约: 
 
 ```
 $ truffle compile
@@ -266,4 +305,122 @@ $ truffle compile
 ```
 > Compiled successfully using:
    - solc: 0.5.16+commit.9c3226ce.Emscripten.clang
+```
+
+6. 在部署之前, 我们需要在`migrations`文件夹中添加迁移文件. 这步的作用是让`Color.sol`被部署.
+
+```
+在/migrations中创建2_deploy_contracts.js, 内容为:
+
+const Color = artifacts.require("Color");
+
+module.exports = function(deployer) {
+    deployer.deploy(Color);
+};
+
+```
+
+7. 迁移部署合约:
+
+```
+$ truffle migrate
+```
+
+> 注意部署时要在ganache中保持部署网络运行.
+
+运行成功会显示:
+
+```
+Summary
+=======
+> Total deployments:   1
+> Final cost:          0.00450474 ETH
+```
+
+8. 在`truffle`控制台中查看部署情况: 
+
+```
+truffle(development)> Color.deployed()
+```
+
+可以看到很多合约的信息. 为了后续开发的便利, 我们可以把这些信息保存到一个变量里. 
+
+由于`Color.deployed()`返回的是一个`Promise`对象, 所以我们可以使用以下语法保存:
+
+```
+color = await Color.deployed()
+或
+Color.deployed().then((result) => {color = result})
+```
+
+> Truffle是用JavaScript语言编写的. Promise是JavaScript中的异步对象. 它有三种状态: pending, resolved, rejected.
+> 
+> 比如在浏览器中输入baidu.com按下回车后, 进度条加载状态就相当于Promise的pending, 成功显示就相当于resolved状态, 网络不好没打开就相当于rejected状态. 而我们所需要的返回值/结果是baidu.com打开后的网页.
+> 
+> 如果直接使用color = Color.deployed()进行赋值会让color成为一个处在pending状态的Promise对象, 而不是Promise对象所返回出的结果.
+
+9. 在`console`中查询合约信息:
+
+```
+truffle(development)> color.name()
+'Color'
+
+truffle(development)> color.address
+'0x87514286d09b0Fb4A8bb4133c53378F35670DE6e'
+
+truffle(development)> color.symbol()
+'COLOR'
+```
+
+10. 由于我们的应用功能包括让用户创建16进制颜色图片的NFT, 所以我们需要在`Color.sol`合约中添加一个铸币方法:
+
+> 在开发合约的过程中, 最好同步编写测试. 本文篇幅有限因此跳过测试的内容.
+
+我们首先在合约中创建一个colors变量, 类型为由字符串组成的列表, 存储所有16进制的颜色字符.
+
+```
+contract Color is ERC721Full {
+    string[] public colors;
+...
+```
+
+铸币方法的流程为: 
+
+1. 颜色字符串传入 *mint* 
+   
+2. 检测颜色是否唯一
+   
+3. 生成颜色的id 
+
+4. 调用ERC-721中的 *_mint* 方法铸币 
+
+5. 确保此颜色在后续不被创建
+
+为了做到第二步和第三步, 我们需要使用`Solidity`中的`mapping`数据结构来记录已铸造的颜色. 
+
+`mapping`类似`python`中的`dictionary`
+
+```
+contract Color is ERC721Full {
+    string[] public colors;
+    mapping(string => bool) _colorExists;
+...
+```
+
+接下来我们按照上面的流程写mint方法:
+
+```
+......
+    function mint(string memory _color) public {
+
+        // 将新铸造的color加入colors列表, 返回数组的新长度作为id
+        uint _id = colors.push(_color);
+
+        // 调用ERC-721中的_mint方法, 铸币
+        // _mint(address to, uint256 tokenId)
+        _mint(msg.sender, _id);
+
+        //将color作为key, true作为value, 传入_colorExists
+        _colorExists[_color] = true;
+    }
 ```
