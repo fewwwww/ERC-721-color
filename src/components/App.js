@@ -1,171 +1,84 @@
 // 引入React框架
 import React from 'react';
 // 引入React Hooks
-import {useEffect, useState} from "react";
+import {useState} from "react";
 // 引入客户端样式文件
 import './App.css';
-// 引入Web3
-import Web3 from "web3";
-// 引入Color的abi
-import Color from '../abis/Color.json'
+// 引入主页组件
+import Home from "./Home";
+
 
 const App = () => {
-  // 将状态中的account默认设置为空字符串
-  // setAccount是改变状态的唯一方法
-  const [account, setAccount] = useState('')
-  // 存储合约
-  const [contract, setContract] = useState(null)
-  // 存储NFT总量
-  const [totalSupply, setTotalSupply] = useState(0)
-  // 存储所有NFT颜色
-  const [colors, setColors] = useState([])
-  // 存储用户输入的颜色
-  const [tempColor, setTempColor] = useState('')
+  // 用户暂时输入的地址的状态变量
+  const [input, setInput] = useState('')
+  // 地址的状态变量
+  const [address, setAddress] = useState('')
+  // 是否需要留在登录页的状态变量
+  const [login, setLogin] = useState(true)
 
-  // 异步加载Web3的函数
-  const loadWeb3 = async () => {
-    // 如果客户端窗口对象内有以太坊
-    if (window.ethereum) {
-      // 生成Web3对象
-      window.web3 = new Web3(window.ethereum)
-      // 异步激活窗口内的以太坊
-      await window.ethereum.enable()
-    }
-    // 此外如果窗口对象内有web3
-    else if (window.web3) {
-      // 生成Web3对象
-      window.web3 = new Web3(window.web3.currentProvider)
-    }
-    // 此外, 两个对象都没有, 弹出警告
-    else {
-      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-    }
+  // 校验用户输入地址, 如果输入不合法显示警告的svg, 合法则把输入存入address, address传入到主页组件, 进入主页
+  let warning = <div></div>
+  if (input.slice(0,2) === '0x') {
+    setAddress(input)
+    setInput('地址校验成功, 正在登录...')
+    setLogin(false)
+  } else if (input === '地址校验成功, 正在登录...' || input === '') {
+    warning = <div></div>
+  } else {
+    warning =
+      <div>
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 0C23.2843 0 30 6.71571 30 15C30 23.2843 23.2843 30 15 30C6.71571 30 0 23.2843 0 15C0 6.71571 6.71571 0 15 0ZM15 2.14286C7.89921 2.14286 2.14286 7.89921 2.14286 15C2.14286 22.1008 7.89921 27.8571 15 27.8571C22.1008 27.8571 27.8571 22.1008 27.8571 15C27.8571 7.89921 22.1008 2.14286 15 2.14286Z" fill="#D70E0E"/>
+          <path d="M8.875 19.375L19.375 8.875C19.8582 8.39175 20.6418 8.39175 21.125 8.875C21.6082 9.35825 21.6082 10.1418 21.125 10.625L10.625 21.125C10.1418 21.6082 9.35825 21.6082 8.875 21.125C8.39175 20.6418 8.39175 19.8582 8.875 19.375Z" fill="#D70E0E"/>
+          <path d="M21.125 19.375L10.625 8.875C10.1418 8.39175 9.35825 8.39175 8.875 8.875C8.39175 9.35825 8.39175 10.1418 8.875 10.625L19.375 21.125C19.8582 21.6082 20.6418 21.6082 21.125 21.125C21.6082 20.6418 21.6082 19.8582 21.125 19.375Z" fill="#D70E0E"/>
+        </svg>
+      </div>
   }
 
-  // 异步加载区块链数据
-  const loadBlockchainData = async () => {
-    // 将窗口对象内的web3赋值在web3变量上
-    const web3 = window.web3
-    // 异步加载web3中的所有账户
-    const accounts = await web3.eth.getAccounts()
-    // 将账户状态修改为accounts中的第一个
-    setAccount(accounts[0])
-    // 拿到网络ID
-    const networkId = await web3.eth.net.getId()
-    // 通过网络ID拿到网络中的数据
-    const networkData = Color.networks[networkId]
-    // 如果Color的网络是ID
-    if(networkData) {
-      // 拿到Color合约中的abi数据
-      const abi = Color.abi
-      // 拿到合约地址
-      const address = networkData.address
-      // 拿到合约内容并存入contract变量
-      const contract = new web3.eth.Contract(abi, address)
-      // 将合约状态设置为新合约
-      setContract(contract)
-      // 拿到合约中的NFT总量
-      const totalSupply = await contract.methods.totalSupply().call()
-      // 将总量状态设置为新总量
-      setTotalSupply(totalSupply)
-      // 暂时存储我们的新colors
-      let tempColors = []
-      // 遍历总量-1次, 每次在colors状态中添加新的color
-      for (let i = 1; i <= totalSupply; i++) {
-        const color = await contract.methods.colors(i - 1).call()
-        // 在新colors中加入拿到的color
-        tempColors = [...tempColors, color]
-      }
-      // 最终将colors状态更新
-      setColors(tempColors)
-    // 如果合约没被部署到这个网络
-    } else {
-      // 弹出警告
-      window.alert('Smart contract not deployed to detected network.')
-      }
-    }
-
-  // 在组件colors变化时挂载时调用loadWeb3(), 加载最新的BlockchainData
-  useEffect(() => {
-    loadWeb3()
-    loadBlockchainData()
-  },[colors])
-
-  // 输入color
-  const mint = (color) => {
-    // 通过调用contract铸币, from为当前账户
-    contract.methods.mint(color).send({ from: account })
-      .once('receipt', (receipt) => {
-        // 将新Colors暂存
-        const newColors = [...colors, color]
-        // 更新Colors状态
-        setColors(newColors)
-      })
-    // 清空tempColor为空
-    setTempColor('')
-    }
-
   return (
-    <div>
-      <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-        <a className="navbar-brand col-sm-3 col-md-2 mr-0"
-           href="https://blog.suningyao.com/docs/Blockchain/erc"
-           target="_blank"
-           rel="noopener noreferrer"
-        >
-            ERC-721 Color
-        </a>
-        <ul className="navbar-nav px-3">
-          <li className="nav-item text-nowrap d-none d-sm-none d-sm-block">
-            {/* {account}的写法意义是在HTML的纯文本中显示JavaScript变量 */}
-            <small className="text-white"><span id="account">你的账号: {account}</span></small>
-          </li>
-        </ul>
-      </nav>
-      <div className="container-fluid mt-5">
-        <div className="row">
-          <main role="main" className="col-lg-12 d-flex text-center">
-            <div className="content mr-auto ml-auto">
-              <h1>铸造新NFT</h1>
-              {/* 按下提交按钮后tempColor为空, 输入框也变空 */}
-              {/* 输入框内容改变时, 将tempColor状态替换为新内容 */}
-              <input
-                  type='text'
-                  className='form-control mb-1'
-                  placeholder='如#FFFFFF的HEX颜色'
-                  value={tempColor}
-                  onChange={(event) =>
-                      setTempColor(event.target.value)}
-              />
-              {/* 提交后调用mint(), 传入当前的tempColor状态 */}
-              <input
-                  type='submit'
-                  className='btn btn-block btn-primary'
-                  value='提交'
-                  onClick={() =>
-                  {
-                    mint(tempColor)
-                  }}
-              />
+      <div>
+        <nav>
+          <div className='home-logo'>
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                  d="M29.308 12.2029L16.0097 0.571606C15.5774 0.193479 15.0081 -0.0111574 14.4208 0.000469665C13.8334 0.0120967 13.2736 0.239087 12.8582 0.633995L0.627656 12.2617L0 12.8584V30H11.7857V19.3046H18.2143V30H30V12.8083L29.308 12.2029ZM14.4668 2.03726C14.4857 2.03726 14.4741 2.04114 14.466 2.04872C14.4576 2.04114 14.4479 2.03726 14.4668 2.03726ZM27.8571 27.9628H20.3571V19.3046C20.3571 18.7643 20.1314 18.2461 19.7295 17.864C19.3277 17.482 18.7826 17.2674 18.2143 17.2674H11.7857C11.2174 17.2674 10.6723 17.482 10.2705 17.864C9.86862 18.2461 9.64286 18.7643 9.64286 19.3046V27.9628H2.14286V13.7022L14.4668 2.0745C14.4677 2.07374 14.4678 2.07304 14.4684 2.07228L27.8571 13.7022V27.9628Z"
+                  fill="white"/>
+            </svg>
+            <p>
+              ERC-721 Color
+            </p>
+          </div>
+          <div>
+            未登录
+          </div>
+        </nav>
+        { login ?
+        <div className='content'>
+          <div className='login'>
+            <div className='enter-address'>
+              <div className='input-text'>你的钱包地址:</div>
+              <div className='input-address'>
+                {/*用户输入变化时则改变状态变量*/}
+                <input type="text"
+                       value={input}
+                       onChange={(event) => setInput(event.target.value)}
+                />
+                {warning}
+              </div>
             </div>
-          </main>
+            <div>或者</div>
+            {/*直接通过MetaMask登录*/}
+            <div className='button' onClick={() => {setLogin(false)}}>
+              <img src="https://img.icons8.com/ios-glyphs/30/000000/login-rounded-right--v1.png"/>
+              使用MetaMask登录
+            </div>
+          </div>
         </div>
-        <hr/>
-        {/* 通过列表形式渲染所有的color, 每个颜色是color中声明的颜色 */}
-        <div className="row text-center">
-          {
-            colors.map((color, key) => {
-            return(
-                <div key={key} className="col-md-3 mb-3">
-                  <div className="token" style={{ backgroundColor: color }}></div>
-                  <div>{color}</div>
-                </div>
-            )
-          })}
-        </div>
+            :
+        <Home address={address}/>
+        }
       </div>
-    </div>
-    );
+  );
 }
 
 export default App;

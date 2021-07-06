@@ -5,3 +5,97 @@
     border-radius: 50%;
     display: inline-block;
 }
+
+nav {
+    display: flex;
+    position: fixed;
+    top: 0;
+    height: 100px;
+    background: linear-gradient(176.18deg, #57068C 10.95%, #0A0337 131.71%);
+    width: 100vw;
+    color: #fbfcfc;
+    font-size: 23px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav div {
+    margin: 0 100px 0 100px;
+}
+
+.home-logo {
+    display: flex;
+    align-items: center;
+}
+
+.home-logo svg {
+    margin-right: 15px;
+}
+
+.home-logo p {
+    margin-block-end: -5px;
+}
+
+.content {
+    margin-top: 100px;
+    background-color: whitesmoke;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+.login {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.button {
+    padding: 10px 20px 10px 10px;
+    background-color: #2FEDBE;
+    border-radius: 10px;
+    width: 250px;
+    display: flex;
+    flex-grow: 0;
+    justify-content: space-around;
+    align-items: center;
+    transition: linear 0.3s;
+}
+
+.button:hover {
+    cursor: pointer;
+    background-color: #E3D9F5;
+}
+
+.enter-address {
+    position: relative;
+    top: -10px;
+}
+
+.input-text {
+    padding-bottom: 5px;
+}
+
+.input-address {
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    background-color: white;
+    overflow: hidden;
+    height: 40px;
+    width: 200px;
+    display: flex;
+    align-items: center;
+}
+
+.input-address input{
+    display: block;
+    border: none;
+    width: 100%;
+    background-color: transparent;
+    margin-left: 10px;
+    margin-right: 10px;
+}
