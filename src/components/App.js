@@ -37,48 +37,50 @@ const App = () => {
 
   return (
       <div>
-        <nav>
-          <div className='home-logo'>
-            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                  d="M29.308 12.2029L16.0097 0.571606C15.5774 0.193479 15.0081 -0.0111574 14.4208 0.000469665C13.8334 0.0120967 13.2736 0.239087 12.8582 0.633995L0.627656 12.2617L0 12.8584V30H11.7857V19.3046H18.2143V30H30V12.8083L29.308 12.2029ZM14.4668 2.03726C14.4857 2.03726 14.4741 2.04114 14.466 2.04872C14.4576 2.04114 14.4479 2.03726 14.4668 2.03726ZM27.8571 27.9628H20.3571V19.3046C20.3571 18.7643 20.1314 18.2461 19.7295 17.864C19.3277 17.482 18.7826 17.2674 18.2143 17.2674H11.7857C11.2174 17.2674 10.6723 17.482 10.2705 17.864C9.86862 18.2461 9.64286 18.7643 9.64286 19.3046V27.9628H2.14286V13.7022L14.4668 2.0745C14.4677 2.07374 14.4678 2.07304 14.4684 2.07228L27.8571 13.7022V27.9628Z"
-                  fill="white"/>
-            </svg>
-            <p>
-              ERC-721 Color
-            </p>
-          </div>
-          <div>
-            未登录
-          </div>
-        </nav>
         { login ?
-        <div className='content'>
-          <div className='login'>
-            <div className='enter-address'>
-              <div className='input-text'>你的钱包地址:</div>
-              <div className='input-address'>
-                {/*用户输入变化时则改变状态变量*/}
-                <input type="text"
-                       value={input}
-                       onChange={(event) => setInput(event.target.value)}
-                />
-                {warning}
+            <>
+              <nav>
+                <div className='home-logo'>
+                  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M29.308 12.2029L16.0097 0.571606C15.5774 0.193479 15.0081 -0.0111574 14.4208 0.000469665C13.8334 0.0120967 13.2736 0.239087 12.8582 0.633995L0.627656 12.2617L0 12.8584V30H11.7857V19.3046H18.2143V30H30V12.8083L29.308 12.2029ZM14.4668 2.03726C14.4857 2.03726 14.4741 2.04114 14.466 2.04872C14.4576 2.04114 14.4479 2.03726 14.4668 2.03726ZM27.8571 27.9628H20.3571V19.3046C20.3571 18.7643 20.1314 18.2461 19.7295 17.864C19.3277 17.482 18.7826 17.2674 18.2143 17.2674H11.7857C11.2174 17.2674 10.6723 17.482 10.2705 17.864C9.86862 18.2461 9.64286 18.7643 9.64286 19.3046V27.9628H2.14286V13.7022L14.4668 2.0745C14.4677 2.07374 14.4678 2.07304 14.4684 2.07228L27.8571 13.7022V27.9628Z"
+                        fill="white"/>
+                  </svg>
+                  <p>
+                    ERC-721 Color
+                  </p>
+                </div>
+                <div>
+                  未登录
+                </div>
+              </nav>
+          <div className='content'>
+            <div className='login'>
+              <div className='enter-address'>
+                <div className='input-text'>你的钱包地址:</div>
+                <div className='input-address'>
+                  {/*用户输入变化时则改变状态变量*/}
+                  <input type="text"
+                         value={input}
+                         onChange={(event) => setInput(event.target.value)}
+                  />
+                  {warning}
+                </div>
+              </div>
+              <div>或者</div>
+              {/*直接通过MetaMask登录*/}
+              <div className='button' onClick={() => {setLogin(false)}}>
+                <img src="https://img.icons8.com/ios-glyphs/30/000000/login-rounded-right--v1.png"/>
+                使用MetaMask登录
               </div>
             </div>
-            <div>或者</div>
-            {/*直接通过MetaMask登录*/}
-            <div className='button' onClick={() => {setLogin(false)}}>
-              <img src="https://img.icons8.com/ios-glyphs/30/000000/login-rounded-right--v1.png"/>
-              使用MetaMask登录
-            </div>
           </div>
-        </div>
+            </>
             :
         <Home address={address}/>
         }
       </div>
   );
-}
+};
 
 export default App;
