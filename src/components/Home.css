@@ -3,6 +3,11 @@
     width: 200px;
     border-radius: 50%;
     display: inline-block;
+    animation: fadein 1s;
+}
+
+.token-p {
+    animation: fadein 2s;
 }
 
 nav {
@@ -112,4 +117,13 @@ svg {
 
 .colors {
     margin: 100px 50px 0 20px;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

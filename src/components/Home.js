@@ -157,7 +157,7 @@ const Home = ({address}) => {
                             return(
                                 <div key={key} className="col-md-3 mb-5">
                                     <div className="token" style={{ backgroundColor: color }}></div>
-                                    <div style={{fontSize: '30px'}}>{color}</div>
+                                    <div className="token-p" style={{fontSize: '30px'}}>{color}</div>
                                 </div>
                             )
                         })}
