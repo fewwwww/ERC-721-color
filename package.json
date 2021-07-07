@@ -1,8 +1,8 @@
 {
-  "name": "eth-marketplace",
+  "name": "ERC-721",
   "version": "0.1.0",
-  "description": "An Ethereum Marketplace",
-  "author": "gregory@dappuniversity.com",
+  "description": "NFT project implements ERC-721",
+  "author": "sy2940@nyu.edu",
   "dependencies": {
     "@openzeppelin/contracts": "^2.3.0",
     "babel-polyfill": "6.26.0",
